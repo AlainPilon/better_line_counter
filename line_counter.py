@@ -13,19 +13,21 @@ class LineZone:
     Count the number of objects that cross a line.
     """
 
-    def __init__(self, start: Point, end: Point):
+    def __init__(self, start: Point, end: Point, trafic_manager=None):
         """
         Initialize a LineCounter object.
 
         Attributes:
             start (Point): The starting point of the line.
             end (Point): The ending point of the line.
+            trafic_manager (TraficManager): The trafic manager that will be called on incoming and outgoing events.
 
         """
         self.vector = Vector(start=start, end=end)
         self.tracker_state: Dict[str, bool] = {}
         self.in_count: int = 0
         self.out_count: int = 0
+        self.trafic_manager = trafic_manager
 
     def trigger(self, detections: Detections):
         """
@@ -67,8 +69,12 @@ class LineZone:
             self.tracker_state[tracker_id] = tracker_state
             if tracker_state:
                 self.in_count += 1
+                if self.trafic_manager:
+                  self.trafic_manager.incoming(tracker_id)
             else:
                 self.out_count += 1
+                if self.trafic_manager:
+                  self.trafic_manager.outgoing(tracker_id)
 
 
 class LineZoneAnnotator:
